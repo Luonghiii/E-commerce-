@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply font-sans;
+  }
+}
+
+/* Custom Utilities */
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* Global transitions for Dark Mode */
+*, *::before, *::after {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 300ms;
+}
+
+/* Exclude transform transitions from global rule to avoid conflicts */
+.transform-gpu, .scale-110, .translate-x-0, .translate-y-0, .translate-y-10, .opacity-0, .opacity-100 {
+   transition-property: transform, opacity, background-color, color;
+}
+
+/* Reveal Animation Utilities */
+.reveal-hidden {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.8s cubic-bezier(0.17, 0.55, 0.55, 1);
+}
+
+.reveal-visible {
+  opacity: 1;
+  transform: translateY(0);
+}

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="vi" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VIBE. Studios | Streetwear Collection</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS CDN for Sandbox environment -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              brand: {
+                dark: '#0f0f0f',
+                light: '#f5f5f5',
+                accent: '#ff4d4d',
+                gray: '#888888',
+                'dark-bg': '#18181b',
+                'dark-surface': '#27272a'
+              }
+            },
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+            },
+            animation: {
+              'fade-in-down': 'fadeInDown 0.3s ease-out',
+              'marquee': 'marquee 20s linear infinite',
+            },
+            keyframes: {
+              fadeInDown: {
+                '0%': { opacity: '0', transform: 'translateY(-10px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)' },
+              },
+              marquee: {
+                '0%': { transform: 'translateX(0)' },
+                '100%': { transform: 'translateX(-50%)' },
+              }
+            }
+          },
+        },
+      }
+    </script>
+
+    <script type="importmap">
+    {
+      "imports": {
+        "react": "https://aistudiocdn.com/react@^19.2.1",
+        "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.1/",
+        "react/": "https://aistudiocdn.com/react@^19.2.1/",
+        "lucide-react": "https://aistudiocdn.com/lucide-react@^0.556.0",
+        "vite": "https://aistudiocdn.com/vite@^7.2.6",
+        "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.1.1"
+      }
+    }
+    </script>
+  </head>
+  <body class="bg-brand-light dark:bg-brand-dark-bg text-brand-dark dark:text-brand-light transition-colors duration-300">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
