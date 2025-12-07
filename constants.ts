@@ -1,10 +1,11 @@
+
 import { Product, NavItem } from './types';
 
 export const NAV_ITEMS: NavItem[] = [
-  { label: 'Shop', href: '#new-drops' },
-  { label: 'Collections', href: '#collections' },
-  { label: 'About', href: '#about' },
-  { label: 'Sale', href: '#sale' },
+  { label: 'Shop', id: 'new-drops', path: '/shop' },
+  { label: 'Collections', id: 'collections', path: '/collections' },
+  { label: 'About', id: 'about', path: '/about' },
+  { label: 'Sale', id: 'sale', path: '/sale' }, // Note: We need to ensure a 'sale' section exists or map it correctly
 ];
 
 export const CATEGORIES = ['All', 'Hoodies', 'T-Shirts', 'Bottoms', 'Outerwear', 'Accessories', 'Footwear', 'Tops'];

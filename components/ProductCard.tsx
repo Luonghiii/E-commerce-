@@ -1,13 +1,16 @@
+
 import React from 'react';
-import { Plus, Heart, Eye } from 'lucide-react';
+import { Heart, Eye } from 'lucide-react';
 import { Product } from '../types';
 
 interface ProductCardProps {
   product: Product;
   onClick: (product: Product) => void;
+  isLiked: boolean;
+  onToggleLike: (product: Product) => void;
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({ product, onClick }) => {
+const ProductCard: React.FC<ProductCardProps> = ({ product, onClick, isLiked, onToggleLike }) => {
   return (
     <div className="group relative flex flex-col cursor-pointer" onClick={() => onClick(product)}>
       <div className="relative aspect-[3/4] overflow-hidden rounded-xl bg-gray-200 dark:bg-gray-800">
@@ -24,12 +27,19 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onClick }) => {
         />
 
         {/* Action Buttons Overlay */}
-        <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-x-4 group-hover:translate-x-0">
+        <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-x-4 group-hover:translate-x-0 z-20">
           <button 
-            className="bg-white dark:bg-brand-dark-surface dark:text-white p-2 rounded-full shadow-lg hover:bg-brand-accent hover:text-white dark:hover:bg-brand-accent transition-colors"
-            onClick={(e) => { e.stopPropagation(); /* Logic for wishlist */ }}
+            className={`p-2 rounded-full shadow-lg transition-colors ${
+              isLiked 
+                ? 'bg-brand-accent text-white' 
+                : 'bg-white dark:bg-brand-dark-surface dark:text-white hover:bg-brand-accent hover:text-white'
+            }`}
+            onClick={(e) => { 
+              e.stopPropagation(); 
+              onToggleLike(product); 
+            }}
           >
-            <Heart size={18} />
+            <Heart size={18} fill={isLiked ? "currentColor" : "none"} />
           </button>
            <button 
             className="bg-white dark:bg-brand-dark-surface dark:text-white p-2 rounded-full shadow-lg hover:bg-brand-dark hover:text-white dark:hover:bg-white dark:hover:text-brand-dark transition-colors"

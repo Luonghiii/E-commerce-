@@ -1,15 +1,28 @@
+
 import React, { useState, useEffect } from 'react';
-import { ShoppingBag, Menu, X, Search, Moon, Sun } from 'lucide-react';
+import { ShoppingBag, Menu, X, Search, Moon, Sun, Heart } from 'lucide-react';
 import { NAV_ITEMS } from '../constants';
+import { navigateToSection } from '../utils';
 
 interface NavbarProps {
   onCartClick: () => void;
+  onWishlistClick: () => void;
+  onSearchClick: () => void;
   cartCount: number;
+  wishlistCount: number;
   isDarkMode: boolean;
   toggleDarkMode: () => void;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ onCartClick, cartCount, isDarkMode, toggleDarkMode }) => {
+const Navbar: React.FC<NavbarProps> = ({ 
+  onCartClick, 
+  onWishlistClick, 
+  onSearchClick,
+  cartCount, 
+  wishlistCount,
+  isDarkMode, 
+  toggleDarkMode 
+}) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -21,6 +34,12 @@ const Navbar: React.FC<NavbarProps> = ({ onCartClick, cartCount, isDarkMode, tog
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const handleNavClick = (e: React.MouseEvent, id: string, path: string) => {
+    e.preventDefault();
+    navigateToSection(id, path);
+    setIsMobileMenuOpen(false);
+  };
+
   return (
     <nav 
       className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
@@ -31,7 +50,10 @@ const Navbar: React.FC<NavbarProps> = ({ onCartClick, cartCount, isDarkMode, tog
     >
       <div className="container mx-auto px-6 flex justify-between items-center">
         {/* Logo */}
-        <div className="text-2xl font-black tracking-tighter text-brand-dark dark:text-white cursor-pointer select-none">
+        <div 
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          className="text-2xl font-black tracking-tighter text-brand-dark dark:text-white cursor-pointer select-none"
+        >
           VIBE.
         </div>
 
@@ -40,7 +62,8 @@ const Navbar: React.FC<NavbarProps> = ({ onCartClick, cartCount, isDarkMode, tog
           {NAV_ITEMS.map((item) => (
             <a 
               key={item.label} 
-              href={item.href}
+              href={item.path}
+              onClick={(e) => handleNavClick(e, item.id, item.path)}
               className={`text-sm font-medium hover:text-brand-accent transition-colors uppercase tracking-widest ${
                 isScrolled ? 'text-brand-dark dark:text-gray-300' : 'text-brand-dark dark:text-white'
               }`}
@@ -59,8 +82,23 @@ const Navbar: React.FC<NavbarProps> = ({ onCartClick, cartCount, isDarkMode, tog
             {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
           </button>
 
-          <button className={`hover:scale-110 transition-transform ${isScrolled ? 'text-brand-dark dark:text-white' : 'text-brand-dark dark:text-white'}`}>
+          <button 
+            onClick={onSearchClick}
+            className={`hover:scale-110 transition-transform ${isScrolled ? 'text-brand-dark dark:text-white' : 'text-brand-dark dark:text-white'}`}
+          >
             <Search size={20} />
+          </button>
+
+          <button 
+            onClick={onWishlistClick}
+            className={`relative hover:scale-110 transition-transform ${isScrolled ? 'text-brand-dark dark:text-white' : 'text-brand-dark dark:text-white'}`}
+          >
+            <Heart size={20} />
+            {wishlistCount > 0 && (
+              <span className="absolute -top-2 -right-2 bg-brand-accent text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                {wishlistCount}
+              </span>
+            )}
           </button>
           
           <button 
@@ -99,16 +137,19 @@ const Navbar: React.FC<NavbarProps> = ({ onCartClick, cartCount, isDarkMode, tog
           {NAV_ITEMS.map((item) => (
             <a 
               key={item.label} 
-              href={item.href}
+              href={item.path}
               className="text-lg font-bold text-brand-dark dark:text-white hover:text-brand-accent transition-colors"
-              onClick={() => setIsMobileMenuOpen(false)}
+              onClick={(e) => handleNavClick(e, item.id, item.path)}
             >
               {item.label}
             </a>
           ))}
-          <div className="pt-4 border-t border-gray-200 dark:border-white/10 flex items-center space-x-4">
-             <button className="flex items-center space-x-2 text-gray-600 dark:text-gray-300">
+          <div className="pt-4 border-t border-gray-200 dark:border-white/10 flex flex-col space-y-4">
+             <button onClick={() => { setIsMobileMenuOpen(false); onSearchClick(); }} className="flex items-center space-x-2 text-gray-600 dark:text-gray-300">
                <Search size={20} /> <span>Search</span>
+             </button>
+             <button onClick={() => { setIsMobileMenuOpen(false); onWishlistClick(); }} className="flex items-center space-x-2 text-gray-600 dark:text-gray-300">
+               <Heart size={20} /> <span>Wishlist ({wishlistCount})</span>
              </button>
              <button onClick={() => { setIsMobileMenuOpen(false); onCartClick(); }} className="flex items-center space-x-2 text-gray-600 dark:text-gray-300">
                <ShoppingBag size={20} /> <span>Cart ({cartCount})</span>

@@ -1,3 +1,4 @@
+
 export interface Product {
   id: number;
   name: string;
@@ -11,7 +12,8 @@ export interface Product {
 
 export interface NavItem {
   label: string;
-  href: string;
+  id: string;   // ID used for document.getElementById
+  path: string; // Clean path for URL (e.g., /shop)
 }
 
 export interface CartItem extends Product {

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
@@ -5,17 +6,23 @@ import ProductCard from './components/ProductCard';
 import Features from './components/Features';
 import Footer from './components/Footer';
 import CartDrawer from './components/CartDrawer';
+import WishlistDrawer from './components/WishlistDrawer';
+import SearchModal from './components/SearchModal';
 import ProductModal from './components/ProductModal';
 import Reveal from './components/Reveal';
 import FilterBar from './components/FilterBar';
 import { PRODUCTS } from './constants';
 import { Product, CartItem } from './types';
 import { Frown } from 'lucide-react';
+import { navigateToSection } from './utils';
 
 const App: React.FC = () => {
   // --- State Management ---
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [wishlist, setWishlist] = useState<number[]>([]); // Store product IDs
+  const [isWishlistOpen, setIsWishlistOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
@@ -26,7 +33,6 @@ const App: React.FC = () => {
 
   // --- Dark Mode Logic ---
   useEffect(() => {
-    // Check local storage or system preference
     if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
       setIsDarkMode(true);
       document.documentElement.classList.add('dark');
@@ -46,6 +52,39 @@ const App: React.FC = () => {
       localStorage.theme = 'dark';
       setIsDarkMode(true);
     }
+  };
+
+  // --- Wishlist Logic ---
+  useEffect(() => {
+    const storedWishlist = localStorage.getItem('vibe_wishlist');
+    if (storedWishlist) {
+      setWishlist(JSON.parse(storedWishlist));
+    }
+  }, []);
+
+  const toggleWishlist = (product: Product) => {
+    setWishlist(prev => {
+      let newWishlist;
+      if (prev.includes(product.id)) {
+        newWishlist = prev.filter(id => id !== product.id);
+      } else {
+        newWishlist = [...prev, product.id];
+      }
+      localStorage.setItem('vibe_wishlist', JSON.stringify(newWishlist));
+      return newWishlist;
+    });
+  };
+
+  const getWishlistItems = () => {
+    return PRODUCTS.filter(p => wishlist.includes(p.id));
+  };
+
+  const moveToCartFromWishlist = (product: Product) => {
+      // Default to first size if available, or just add
+      const defaultSize = product.sizes ? product.sizes[0] : 'One Size';
+      addToCart(product, defaultSize, 1);
+      setIsWishlistOpen(false);
+      setIsCartOpen(true);
   };
 
   // --- Cart Logic ---
@@ -78,7 +117,7 @@ const App: React.FC = () => {
     if (cart.length === 0) return;
     setIsCheckingOut(true);
     
-    // Simulate API call and payment processing
+    // Simulate API call
     setTimeout(() => {
       setIsCheckingOut(false);
       setCart([]);
@@ -95,12 +134,10 @@ const App: React.FC = () => {
   const filteredProducts = useMemo(() => {
     let result = [...PRODUCTS];
 
-    // Filter by Category
     if (activeCategory !== 'All') {
       result = result.filter(p => p.category === activeCategory);
     }
 
-    // Sort
     switch (activeSort) {
       case 'price-asc':
         result.sort((a, b) => a.price - b.price);
@@ -110,7 +147,6 @@ const App: React.FC = () => {
         break;
       case 'newest':
       default:
-        // Sort by New first, then ID (assuming higher ID is newer)
         result.sort((a, b) => {
           if (a.isNew && !b.isNew) return -1;
           if (!a.isNew && b.isNew) return 1;
@@ -126,7 +162,10 @@ const App: React.FC = () => {
     <div className="min-h-screen bg-brand-light dark:bg-brand-dark-bg text-brand-dark dark:text-brand-light selection:bg-brand-accent selection:text-white transition-colors duration-300">
       <Navbar 
         onCartClick={() => setIsCartOpen(true)} 
+        onWishlistClick={() => setIsWishlistOpen(true)}
+        onSearchClick={() => setIsSearchOpen(true)}
         cartCount={cartCount}
+        wishlistCount={wishlist.length}
         isDarkMode={isDarkMode}
         toggleDarkMode={toggleDarkMode}
       />
@@ -139,6 +178,20 @@ const App: React.FC = () => {
         onUpdateQty={updateQuantity}
         onCheckout={handleCheckout}
         isCheckingOut={isCheckingOut}
+      />
+
+      <WishlistDrawer
+        isOpen={isWishlistOpen}
+        onClose={() => setIsWishlistOpen(false)}
+        items={getWishlistItems()}
+        onRemove={(id) => setWishlist(prev => prev.filter(item => item !== id))}
+        onMoveToCart={moveToCartFromWishlist}
+      />
+
+      <SearchModal 
+        isOpen={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
+        onProductClick={(product) => setSelectedProduct(product)}
       />
 
       <ProductModal 
@@ -173,12 +226,14 @@ const App: React.FC = () => {
           </Reveal>
           
           {filteredProducts.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-6 gap-y-10">
               {filteredProducts.map((product, index) => (
                 <Reveal key={product.id} delay={index * 50}>
                   <ProductCard 
                     product={product} 
                     onClick={setSelectedProduct}
+                    isLiked={wishlist.includes(product.id)}
+                    onToggleLike={toggleWishlist}
                   />
                 </Reveal>
               ))}
@@ -211,7 +266,7 @@ const App: React.FC = () => {
                 <div className="absolute inset-0 bg-black/30 group-hover:bg-black/20 transition-colors"></div>
                 <div className="absolute bottom-10 left-10 text-white">
                   <h3 className="text-3xl font-black mb-4 uppercase">Urban Men</h3>
-                  <button onClick={() => { setActiveCategory('Hoodies'); document.getElementById('new-drops')?.scrollIntoView({ behavior: 'smooth' }); }} className="inline-block bg-white text-black px-8 py-3 font-bold text-sm uppercase hover:bg-brand-accent hover:text-white transition-colors cursor-pointer">
+                  <button onClick={() => { setActiveCategory('Hoodies'); navigateToSection('new-drops', '/shop'); }} className="inline-block bg-white text-black px-8 py-3 font-bold text-sm uppercase hover:bg-brand-accent hover:text-white transition-colors cursor-pointer">
                     Shop Men
                   </button>
                 </div>
@@ -225,7 +280,7 @@ const App: React.FC = () => {
                  <div className="absolute inset-0 bg-black/30 group-hover:bg-black/20 transition-colors"></div>
                  <div className="absolute bottom-10 left-10 text-white">
                   <h3 className="text-3xl font-black mb-4 uppercase">Street Women</h3>
-                  <button onClick={() => { setActiveCategory('Tops'); document.getElementById('new-drops')?.scrollIntoView({ behavior: 'smooth' }); }} className="inline-block bg-white text-black px-8 py-3 font-bold text-sm uppercase hover:bg-brand-accent hover:text-white transition-colors cursor-pointer">
+                  <button onClick={() => { setActiveCategory('Tops'); navigateToSection('new-drops', '/shop'); }} className="inline-block bg-white text-black px-8 py-3 font-bold text-sm uppercase hover:bg-brand-accent hover:text-white transition-colors cursor-pointer">
                     Shop Women
                   </button>
                 </div>
@@ -286,8 +341,8 @@ const App: React.FC = () => {
           <Features />
         </Reveal>
 
-        {/* Marquee Text - Aesthetic touch */}
-        <div className="py-4 bg-brand-accent overflow-hidden whitespace-nowrap">
+        {/* Marquee Text - Aesthetic touch - Added ID for Sale nav */}
+        <div id="sale" className="py-4 bg-brand-accent overflow-hidden whitespace-nowrap cursor-pointer hover:opacity-90 transition-opacity">
           <div className="inline-block animate-marquee">
             <span className="text-white font-black text-2xl mx-8">NEW SEASON SALE 50% OFF</span>
             <span className="text-brand-dark font-black text-2xl mx-8">FREE SHIPPING WORLDWIDE</span>
